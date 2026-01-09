@@ -13,6 +13,9 @@ export function Signup({ onToggle }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // ✅ Backend base URL from .env
+  const API = import.meta.env.VITE_API_URL
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -24,16 +27,18 @@ export function Signup({ onToggle }) {
     setLoading(true)
     setError('')
     setSuccess('')
-    
+
     try {
-      const response = await axios.post('http://localhost:3000/user/signup', formData, {
+      const response = await axios.post(`${API}/user/signup`, formData, {
         headers: {
           'Content-Type': 'application/json'
         }
       })
+
       setSuccess('✨ Account created successfully! Redirecting...')
       setFormData({ firstname: '', lastname: '', email: '', password: '' })
       setTimeout(() => onToggle('login'), 1500)
+
     } catch (err) {
       setError(err.response?.data?.error || err.message || '❌ Signup failed. Try again.')
     } finally {
@@ -50,7 +55,7 @@ export function Signup({ onToggle }) {
           <h1>Get Started</h1>
           <p className="auth-subtitle">Create your account in seconds</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-row">
             <div className="form-group">
@@ -113,8 +118,8 @@ export function Signup({ onToggle }) {
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary btn-large"
             disabled={loading}
           >
@@ -132,7 +137,7 @@ export function Signup({ onToggle }) {
           </div>
 
           <div className="toggle-link">
-            Already have an account? 
+            Already have an account?
             <button type="button" onClick={() => onToggle('login')}>
               Sign In
             </button>
@@ -142,4 +147,3 @@ export function Signup({ onToggle }) {
     </div>
   )
 }
-
