@@ -32,7 +32,6 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // Apply authentication middleware globally
-app.use(authenticationMiddleware);
 
 app.get('/', (req, res) => {
   res.send('Welcome to the URL Shortener Service');
@@ -40,6 +39,9 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/user', userRouter);
+app.use(authenticationMiddleware);
+
+
 app.use( urlRouter);
 
 app.listen(PORT, () => {
