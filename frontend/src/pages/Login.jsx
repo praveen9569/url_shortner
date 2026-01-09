@@ -11,6 +11,9 @@ export function Login({ onToggle, onSuccess }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // ✅ Backend base URL from .env
+  const API = import.meta.env.VITE_API_URL
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -22,17 +25,19 @@ export function Login({ onToggle, onSuccess }) {
     setLoading(true)
     setError('')
     setSuccess('')
-    
+
     try {
-      const response = await axios.post('http://localhost:3000/user/login', formData, {
+      const response = await axios.post(`${API}/user/login`, formData, {
         headers: {
           'Content-Type': 'application/json'
         }
       })
+
       setSuccess('🎉 Login successful! Redirecting...')
       localStorage.setItem('token', response.data.token)
       setFormData({ email: '', password: '' })
       setTimeout(() => onSuccess('Login successful!'), 1000)
+
     } catch (err) {
       setError(err.response?.data?.error || err.message || '❌ Login failed. Please check your credentials.')
     } finally {
@@ -49,7 +54,7 @@ export function Login({ onToggle, onSuccess }) {
           <h1>Welcome Back</h1>
           <p className="auth-subtitle">Enter your credentials to continue</p>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
             <input
@@ -86,8 +91,8 @@ export function Login({ onToggle, onSuccess }) {
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary btn-large"
             disabled={loading}
           >
@@ -105,7 +110,7 @@ export function Login({ onToggle, onSuccess }) {
           </div>
 
           <div className="toggle-link">
-            Don't have an account? 
+            Don't have an account?
             <button type="button" onClick={() => onToggle('signup')}>
               Get Started
             </button>
@@ -115,4 +120,3 @@ export function Login({ onToggle, onSuccess }) {
     </div>
   )
 }
-
