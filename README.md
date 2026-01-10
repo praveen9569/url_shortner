@@ -252,14 +252,7 @@ Focused on building production-grade applications with scalable architecture.
 
 ---
 
-## ⭐ If You Like This Project
 
-- ⭐ **Star** the repository
-- 🔀 **Fork** it for your own projects
-- 📢 **Share** it with others
-- 💡 Use it as a base for your own SaaS projects
-
----
 
 ## 🤝 Contributing
 
