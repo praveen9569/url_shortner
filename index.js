@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/user', userRouter);
-app.use('/', urlRouter);
+app.use( urlRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

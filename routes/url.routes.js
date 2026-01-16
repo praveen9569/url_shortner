@@ -2,10 +2,32 @@ import express from 'express';
 import { shortenPostRequestBodySchema } from '../validation/request.validation.js';
 import {db} from '../db/index.js';
 import  {urlsTable} from '../models/index.js';
+import { eq } from 'drizzle-orm';
 import {nanoid} from 'nanoid';
 import { ensureAuthenticated } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
+
+router.get('/short/:code', async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    const [record] = await db
+      .select({ targetURL: urlsTable.targetURL })
+      .from(urlsTable)
+      .where(eq(urlsTable.shortcode, code))
+      .limit(1);
+
+    if (!record) {
+      return res.status(404).json({ error: 'Short URL not found' });
+    }
+
+    return res.redirect(record.targetURL);
+  } catch (error) {
+    console.error('Error handling redirect:', error);
+    return res.status(500).json({ error: 'Failed to redirect' });
+  }
+});
 
 router.post('/shorten', ensureAuthenticated, async (req, res) => {
   try {

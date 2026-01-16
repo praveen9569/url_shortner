@@ -18,6 +18,11 @@ export function authenticationMiddleware(req, res, next) {
         return next();
     }
 
+    // Allow public redirects for shortened URLs
+    if (req.path.startsWith('/short')) {
+        return next();
+    }
+
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
