@@ -5,7 +5,7 @@ import { authenticationMiddleware } from './middlewares/auth.middleware.js';
 import urlRouter from './routes/url.routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 
 /* =========================
    CORS CONFIGURATION
