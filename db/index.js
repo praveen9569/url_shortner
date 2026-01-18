@@ -2,32 +2,26 @@ import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 
-const { Client } = pg;
+const { Pool } = pg;
 
-const client = new Client({
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? {
     rejectUnauthorized: false
   } : false
 });
 
-// Connect with error handling
-let isConnected = false;
-
-const connectDB = async () => {
-  try {
-    await client.connect();
-    console.log('✅ Database connected successfully');
-    isConnected = true;
-  } catch (error) {
-    console.error('❌ Database connection error:', error);
-    console.error('Check your DATABASE_URL in Railway variables');
-    process.exit(1); // Exit if DB connection fails
-  }
-};
-
-// Call connection
-connectDB();
-
-export const db = drizzle(client);
+// Don't use top-level await - just export immediately
+export const db = drizzle(pool);
 export default db;
+
+// Test connection asynchronously (non-blocking)
+pool.connect()
+  .then(client => {
+    console.log('✅ Database connected');
+    client.release();
+  })
+  .catch(err => {
+    console.error('❌ Database connection failed:', err.message);
+    console.error('DATABASE_URL:', process.env.DATABASE_URL ? 'exists' : 'MISSING');
+  });
