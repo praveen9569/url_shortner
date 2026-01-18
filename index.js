@@ -5,7 +5,6 @@ import { authenticationMiddleware } from './middlewares/auth.middleware.js';
 import urlRouter from './routes/url.routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 8000;
 
 /* =========================
    CORS CONFIGURATION
@@ -43,6 +42,7 @@ app.use(urlRouter);
 /* =========================
    START SERVER
 ========================= */
-app.listen(PORT, '0.0.0.0' , () => {
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
