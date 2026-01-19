@@ -15,8 +15,9 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://url-shortner-indol-eight.vercel.app"
-  ],
+    "https://url-shortner-indol-eight.vercel.app",
+    process.env.CORS_ORIGIN
+  ].filter(Boolean), // Filter out undefined if env var is not set
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
