@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Signup } from './pages/Signup'
 import { Login } from './pages/Login'
-import { Shorten } from './pages/Shorten'
+import { Dashboard } from './pages/Dashboard'
+import { RedirectHandler } from './pages/RedirectHandler'
 import './App.css'
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
   const handleAuthSuccess = (message) => {
     setNotification(message)
     setTimeout(() => setNotification(''), 3000)
-    
+
     if (message.includes('Login')) {
       const savedToken = localStorage.getItem('token')
       if (savedToken) {
@@ -38,6 +38,12 @@ function App() {
     setTimeout(() => setNotification(''), 3000)
   }
 
+  /* Check for redirection route */
+  const path = window.location.pathname
+  if (path.startsWith('/short/')) {
+    return <RedirectHandler />
+  }
+
   return (
     <div className="app">
       {notification && (
@@ -47,23 +53,9 @@ function App() {
       )}
 
       {token ? (
-        <div className="app-content">
-          <header className="app-header">
-            <h1 className="logo">🔗 ShortLink</h1>
-            <button onClick={handleLogout} className="btn btn-logout">
-              Logout
-            </button>
-          </header>
-          <Shorten token={token} />
-        </div>
+        <Dashboard token={token} onLogout={handleLogout} />
       ) : (
-        <div className="auth-wrapper">
-          {currentPage === 'signup' ? (
-            <Signup onToggle={setCurrentPage} />
-          ) : (
-            <Login onToggle={setCurrentPage} onSuccess={handleAuthSuccess} />
-          )}
-        </div>
+        <Login onSuccess={handleAuthSuccess} />
       )}
     </div>
   )

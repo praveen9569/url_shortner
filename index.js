@@ -4,6 +4,7 @@ import cors from 'cors';
 import userRouter from './routes/user.routes.js';
 import { authenticationMiddleware } from './middlewares/auth.middleware.js';
 import urlRouter from './routes/url.routes.js';
+import analyticsRouter from './routes/analytics.routes.js';
 
 const app = express();
 
@@ -13,6 +14,7 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:5173",
+    "http://localhost:5174",
     "https://url-shortner-indol-eight.vercel.app"
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -29,7 +31,7 @@ app.use(express.json());
    PUBLIC ROUTES
 ========================= */
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'ok',
     message: 'Welcome to the URL Shortener Service',
     timestamp: new Date().toISOString()
@@ -43,15 +45,16 @@ app.use('/user', userRouter);
 ========================= */
 app.use(authenticationMiddleware);
 app.use(urlRouter);
+app.use('/api/analytics', analyticsRouter);
 
 /* =========================
    ERROR HANDLING
 ========================= */
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Internal server error',
-    message: err.message 
+    message: err.message
   });
 });
 

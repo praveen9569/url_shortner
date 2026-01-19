@@ -1,0 +1,8 @@
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+✅ Server running on port 3000
+📍 Environment: development
+🔗 Database URL: configured
+🔑 JWT Secret: configured
+✅ Database connected
+Auth failed: No token provided for path: /favicon.ico
