@@ -1,5 +1,4 @@
-import { url } from 'inspector';
-import { z} from 'zod';
+import { z } from 'zod';
 
 
 export const signupPostRequestBodySchema = z.object({

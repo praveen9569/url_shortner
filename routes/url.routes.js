@@ -1,38 +1,52 @@
 import express from 'express';
 import { shortenPostRequestBodySchema } from '../validation/request.validation.js';
-import {db} from '../db/index.js';
-import  {urlsTable} from '../models/index.js';
+import { db } from '../db/index.js';
+import { urlsTable } from '../models/index.js';
+import { nanoid } from 'nanoid';
 import { eq } from 'drizzle-orm';
-import {nanoid} from 'nanoid';
-import { ensureAuthenticated } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-router.get('/short/:code', async (req, res) => {
+// Redirect route - handles short URL redirection (PUBLIC - no auth required)
+router.get('/short/:shortcode', async (req, res) => {
   try {
-    const { code } = req.params;
+    const { shortcode } = req.params;
 
-    const [record] = await db
-      .select({ targetURL: urlsTable.targetURL })
+    const [urlRecord] = await db
+      .select()
       .from(urlsTable)
-      .where(eq(urlsTable.shortcode, code))
+      .where(eq(urlsTable.shortcode, shortcode))
       .limit(1);
 
-    if (!record) {
+    if (!urlRecord) {
       return res.status(404).json({ error: 'Short URL not found' });
     }
 
-    return res.redirect(record.targetURL);
+    // Record click asynchronously (don't wait for it to complete)
+    const clickMetadata = {
+      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('user-agent'),
+      referer: req.get('referer') || req.get('referrer'),
+    };
+
+    // Import recordClick dynamically
+    import('../services/analytics.service.js')
+      .then(({ recordClick }) => recordClick(shortcode, clickMetadata))
+      .catch(err => console.error('Error recording click:', err));
+
+    // Redirect to the original URL immediately
+    res.redirect(urlRecord.targetURL);
   } catch (error) {
-    console.error('Error handling redirect:', error);
-    return res.status(500).json({ error: 'Failed to redirect' });
+    console.error('Error redirecting:', error);
+    res.status(500).json({ error: 'Failed to redirect' });
   }
 });
 
-router.post('/shorten', ensureAuthenticated, async (req, res) => {
+// Shorten URL route - creates new short URL (PROTECTED - requires auth via middleware in index.js)
+router.post('/shorten', async (req, res) => {
   try {
     const userID = req.user.id;
-    
+
     const validationResult = await shortenPostRequestBodySchema.safeParseAsync(req.body);
     if (!validationResult.success) {
       return res.status(400).json({ error: 'Invalid request data', details: validationResult.error.errors });
@@ -52,11 +66,11 @@ router.post('/shorten', ensureAuthenticated, async (req, res) => {
       userID: urlsTable.userID,
     });
 
-    res.status(201).json({ 
+    res.status(201).json({
       id: result.id,
-      shortcode: result.shortcode, 
-      targetURL: result.targetURL, 
-      userID: result.userID 
+      shortcode: result.shortcode,
+      targetURL: result.targetURL,
+      userID: result.userID
     });
   } catch (error) {
     console.error('Error shortening URL:', error);

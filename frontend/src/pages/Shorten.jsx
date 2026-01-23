@@ -46,7 +46,8 @@ export function Shorten({ token }) {
   const copyToClipboard = (shortcode) => {
     const shortUrl = `${API}/short/${shortcode}`
     navigator.clipboard.writeText(shortUrl)
-    alert('Copied to clipboard!')
+      .then(() => alert('Copied to clipboard!'))
+      .catch(() => alert('Failed to copy'))
   }
 
   return (
