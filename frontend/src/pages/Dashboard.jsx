@@ -46,7 +46,7 @@ export function Dashboard({ token, onLogout }) {
     };
 
     const copyToClipboard = (shortcode) => {
-        const shortUrl = `${window.location.origin}/short/${shortcode}`;
+        const shortUrl = `${API}/short/${shortcode}`;
         navigator.clipboard.writeText(shortUrl);
         alert('Short URL copied to clipboard!');
     };
