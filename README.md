@@ -2,6 +2,11 @@
 
 A modern, scalable URL shortening service built with Node.js, Express, React, and PostgreSQL. Features JWT authentication, analytics tracking, and cloud deployment.
 
+<p align="center">
+  <img src="assets/dashboard.png" alt="LinkShort Pro Dashboard" width="900"/>
+</p>
+
+
 [![Live Demo](https://img.shields.io/badge/demo-live-success)](https://your-demo-url.vercel.app)
 [![Backend](https://urlshortner-production-c68c.up.railway.app/)](https://railway.app)
 [![Frontend](https://url-shortner-indol-eight.vercel.app/)](https://vercel.com)
