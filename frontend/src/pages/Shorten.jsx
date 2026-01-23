@@ -10,15 +10,18 @@ export function Shorten({ token }) {
   const [success, setSuccess] = useState(null)
   const [shortenedUrls, setShortenedUrls] = useState([])
 
+  // ✅ Backend base URL from .env
+  const API = import.meta.env.VITE_API_URL
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     setSuccess(null)
-    
+
     try {
       const response = await axios.post(
-        'http://localhost:3000/shorten',
+        `${API}/shorten`,
         { url, code: code || undefined },
         {
           headers: {
@@ -27,11 +30,12 @@ export function Shorten({ token }) {
           }
         }
       )
-      
+
       setShortenedUrls([response.data, ...shortenedUrls])
       setUrl('')
       setCode('')
       setSuccess(response.data)
+
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to shorten URL')
     } finally {
@@ -40,7 +44,7 @@ export function Shorten({ token }) {
   }
 
   const copyToClipboard = (shortcode) => {
-    const shortUrl = `http://localhost:3000/short/${shortcode}`
+    const shortUrl = `${API}/short/${shortcode}`
     navigator.clipboard.writeText(shortUrl)
     alert('Copied to clipboard!')
   }
@@ -50,7 +54,7 @@ export function Shorten({ token }) {
       <div className="shorten-card">
         <h1>Shorten Your URL</h1>
         <p className="shorten-subtitle">Create a short, shareable link</p>
-        
+
         <form onSubmit={handleSubmit} className="shorten-form">
           <div className="form-group">
             <label>URL to Shorten</label>
@@ -84,8 +88,8 @@ export function Shorten({ token }) {
             </div>
           )}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary"
             disabled={loading}
           >
