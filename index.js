@@ -4,6 +4,7 @@ import cors from 'cors';
 import userRouter from './routes/user.routes.js';
 import { authenticationMiddleware } from './middlewares/auth.middleware.js';
 import urlRouter from './routes/url.routes.js';
+import urlProtectedRouter from './routes/url.protected.routes.js';
 import analyticsRouter from './routes/analytics.routes.js';
 
 const app = express();
@@ -62,6 +63,7 @@ app.use(urlRouter);
    PROTECTED ROUTES
 ========================= */
 app.use(authenticationMiddleware);
+app.use(urlProtectedRouter); // Protected URL routes (shorten)
 app.use('/api/analytics', analyticsRouter);
 
 /* =========================
