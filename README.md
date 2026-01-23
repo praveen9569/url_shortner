@@ -3,8 +3,8 @@
 A modern, scalable URL shortening service built with Node.js, Express, React, and PostgreSQL. Features JWT authentication, analytics tracking, and cloud deployment.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-success)](https://your-demo-url.vercel.app)
-[![Backend](https://img.shields.io/badge/backend-railway-blueviolet)](https://railway.app)
-[![Frontend](https://img.shields.io/badge/frontend-vercel-black)](https://vercel.com)
+[![Backend](https://urlshortner-production-c68c.up.railway.app/)](https://railway.app)
+[![Frontend](https://url-shortner-indol-eight.vercel.app/)](https://vercel.com)
 
 ---
 
