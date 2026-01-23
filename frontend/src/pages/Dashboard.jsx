@@ -17,6 +17,14 @@ export function Dashboard({ token, onLogout }) {
     const [creating, setCreating] = useState(false);
     const [createError, setCreateError] = useState('');
 
+    // Action button states
+    const [selectedUrl, setSelectedUrl] = useState(null);
+    const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [urlAnalytics, setUrlAnalytics] = useState(null);
+    const [deleting, setDeleting] = useState(false);
+
     const API = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
@@ -90,6 +98,48 @@ export function Dashboard({ token, onLogout }) {
             setCreateError(error.response?.data?.error || 'Failed to create short URL');
         } finally {
             setCreating(false);
+        }
+    };
+
+    // Action button handlers
+    const handleViewAnalytics = async (url) => {
+        setSelectedUrl(url);
+        try {
+            const response = await axios.get(`${API}/api/analytics/url/${url.shortcode}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setUrlAnalytics(response.data);
+            setShowAnalyticsModal(true);
+        } catch (error) {
+            alert('Failed to load analytics');
+        }
+    };
+
+    const handleEditUrl = (url) => {
+        setSelectedUrl(url);
+        setNewUrl({ url: url.targetURL, code: url.shortcode });
+        setShowEditModal(true);
+    };
+
+    const handleDeleteUrl = (url) => {
+        setSelectedUrl(url);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        setDeleting(true);
+        try {
+            // Note: You'll need to implement DELETE endpoint in backend
+            await axios.delete(`${API}/api/urls/${selectedUrl.id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            await fetchDashboardData();
+            setShowDeleteModal(false);
+            alert('URL deleted successfully!');
+        } catch (error) {
+            alert('Failed to delete URL');
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -325,9 +375,27 @@ export function Dashboard({ token, onLogout }) {
                                                     </td>
                                                     <td>
                                                         <div className="action-buttons">
-                                                            <button className="btn-action" title="View Analytics">📊</button>
-                                                            <button className="btn-action" title="Edit">✏️</button>
-                                                            <button className="btn-action" title="Delete">🗑️</button>
+                                                            <button
+                                                                className="btn-action"
+                                                                title="View Analytics"
+                                                                onClick={() => handleViewAnalytics(url)}
+                                                            >
+                                                                📊
+                                                            </button>
+                                                            <button
+                                                                className="btn-action"
+                                                                title="Edit"
+                                                                onClick={() => handleEditUrl(url)}
+                                                            >
+                                                                ✏️
+                                                            </button>
+                                                            <button
+                                                                className="btn-action"
+                                                                title="Delete"
+                                                                onClick={() => handleDeleteUrl(url)}
+                                                            >
+                                                                🗑️
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -355,9 +423,104 @@ export function Dashboard({ token, onLogout }) {
                 {activeView === 'links' && (
                     <div className="dashboard-content">
                         <p className="welcome-text">Manage all your shortened links</p>
-                        <div className="empty-state-large">
-                            <h3>My Links view coming soon!</h3>
-                            <p>This will show all your URLs with advanced filtering and management options.</p>
+
+                        <div className="urls-section">
+                            <div className="section-header">
+                                <div className="search-bar">
+                                    <svg className="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                        <circle cx="8" cy="8" r="5" stroke="currentColor" strokeWidth="1.5" />
+                                        <path d="M12 12l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                    </svg>
+                                    <input
+                                        type="text"
+                                        placeholder="Search all links..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="urls-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>ORIGINAL DESTINATION</th>
+                                            <th>SHORT URL</th>
+                                            <th>CLICKS</th>
+                                            <th>STATUS</th>
+                                            <th>ACTIONS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredUrls.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="5" className="empty-state">
+                                                    No URLs found. Create your first short link!
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredUrls.map((url) => (
+                                                <tr key={url.id}>
+                                                    <td>
+                                                        <div className="url-cell">
+                                                            <div className="url-title">{url.targetURL.substring(0, 50)}...</div>
+                                                            <div className="url-meta">{url.targetURL}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="short-url-cell">
+                                                            <code>shrt.ly/{url.shortcode}</code>
+                                                            <button
+                                                                className="btn-copy"
+                                                                onClick={() => copyToClipboard(url.shortcode)}
+                                                                title="Copy"
+                                                            >
+                                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                                    <rect x="5" y="5" width="9" height="9" rx="1" stroke="currentColor" strokeWidth="1.5" />
+                                                                    <path d="M3 11V3a1 1 0 011-1h8" stroke="currentColor" strokeWidth="1.5" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="clicks-cell">
+                                                            <strong>{url.clicks.toLocaleString()}</strong>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span className="status-badge active">● ACTIVE</span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="action-buttons">
+                                                            <button
+                                                                className="btn-action"
+                                                                title="View Analytics"
+                                                                onClick={() => handleViewAnalytics(url)}
+                                                            >
+                                                                📊
+                                                            </button>
+                                                            <button
+                                                                className="btn-action"
+                                                                title="Edit"
+                                                                onClick={() => handleEditUrl(url)}
+                                                            >
+                                                                ✏️
+                                                            </button>
+                                                            <button
+                                                                className="btn-action"
+                                                                title="Delete"
+                                                                onClick={() => handleDeleteUrl(url)}
+                                                            >
+                                                                🗑️
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -366,9 +529,37 @@ export function Dashboard({ token, onLogout }) {
                 {activeView === 'analytics' && (
                     <div className="dashboard-content">
                         <p className="welcome-text">Detailed analytics and insights</p>
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-header">
+                                    <span className="stat-label">TOTAL CLICKS</span>
+                                </div>
+                                <div className="stat-value">{stats.totalClicks.toLocaleString()}</div>
+                                <div className="stat-meta">Across all your links</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-header">
+                                    <span className="stat-label">ACTIVE LINKS</span>
+                                </div>
+                                <div className="stat-value">{stats.activeLinks}</div>
+                                <div className="stat-meta">Currently active</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-header">
+                                    <span className="stat-label">TOP LOCATION</span>
+                                </div>
+                                <div className="location-info">
+                                    <span className="country-flag">{getCountryFlag(stats.topLocation.country)}</span>
+                                    <div>
+                                        <div className="country-name">{stats.topLocation.country}</div>
+                                        <div className="country-stat">{stats.topLocation.percentage}% of traffic</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div className="empty-state-large">
-                            <h3>Analytics view coming soon!</h3>
-                            <p>This will show charts, graphs, and detailed statistics about your links.</p>
+                            <h3>📊 Detailed Charts Coming Soon!</h3>
+                            <p>We're working on advanced analytics with charts, graphs, and geographic data visualization.</p>
                         </div>
                     </div>
                 )}
