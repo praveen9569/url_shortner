@@ -10,7 +10,20 @@ const router = express.Router();
 router.post('/shorten', async (req, res) => {
     try {
         // req.user is set by authenticationMiddleware
-        const userID = req.user.id;
+        console.log('Shorten route - req.user:', req.user);
+        console.log('Shorten route - full req.user object:', JSON.stringify(req.user));
+
+        if (!req.user) {
+            console.error('req.user is undefined!');
+            return res.status(401).json({ error: 'Authentication required - user not found' });
+        }
+
+        const userID = req.user.id || req.user.userId;
+
+        if (!userID) {
+            console.error('userID is undefined! req.user:', req.user);
+            return res.status(401).json({ error: 'Authentication required - user ID not found' });
+        }
 
         const validationResult = await shortenPostRequestBodySchema.safeParseAsync(req.body);
         if (!validationResult.success) {
@@ -39,7 +52,7 @@ router.post('/shorten', async (req, res) => {
         });
     } catch (error) {
         console.error('Error shortening URL:', error);
-        res.status(500).json({ error: 'Failed to shorten URL' });
+        res.status(500).json({ error: 'Failed to shorten URL', message: error.message });
     }
 });
 
