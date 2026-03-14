@@ -21,12 +21,11 @@ function App() {
     setNotification(message)
     setTimeout(() => setNotification(''), 3000)
 
-    if (message.includes('Login')) {
-      const savedToken = localStorage.getItem('token')
-      if (savedToken) {
-        setToken(savedToken)
-        setCurrentPage('shorten')
-      }
+    // If we have a token in localStorage, we consider auth successful
+    const savedToken = localStorage.getItem('token')
+    if (savedToken) {
+      setToken(savedToken)
+      setCurrentPage('shorten')
     }
   }
 

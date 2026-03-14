@@ -38,7 +38,10 @@ router.post('/signup', async(req, res) => {
      password: hashedPassword,
    });
    
-   res.status(201).json({ user: newUser });
+   // Generate JWT token for instant login
+   const token = await createUserToken(newUser);
+   
+   res.status(201).json({ user: newUser, token });
 
 
 

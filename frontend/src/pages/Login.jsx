@@ -49,14 +49,15 @@ export function Login({ onSuccess }) {
 
     try {
       const response = await axios.post(`${API}/user/signup`, signupData);
-      localStorage.setItem('token', response.data.token || '');
-      // Auto-login after signup
-      const loginResponse = await axios.post(`${API}/user/login`, {
-        email: signupData.email,
-        password: signupData.password
-      });
-      localStorage.setItem('token', loginResponse.data.token);
-      if (onSuccess) onSuccess('Signup successful!');
+      
+      // Auto-login instantly using the token returned from the signup backend fix
+      const newToken = response.data.token;
+      if (newToken) {
+         localStorage.setItem('token', newToken);
+         if (onSuccess) onSuccess('Account created and logged in successfully!');
+      } else {
+         setError('Account created, but failed to auto-login.');
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Signup failed');
     } finally {
@@ -65,67 +66,61 @@ export function Login({ onSuccess }) {
   };
 
   return (
-    <div className="modern-auth-container">
-      <div className="modern-auth-card">
-        <div className="auth-brand">
-          <div className="brand-icon">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#14B8A6" />
-              <path d="M16 8L22 16L16 24L10 16L16 8Z" fill="white" />
-            </svg>
+    <div className="split-screen-container">
+      {/* LEFT PANEL: FANCY BRANDING */}
+      <div className="split-left">
+         <div className="brand-logo">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="logo-icon">
+             <path d="M4 6H20M4 12H20M4 18H20" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+           </svg>
+           <span>CustomLink Pro</span>
+         </div>
+
+         <div className="left-content">
+            <h1 className="left-title">Manage your links with precision.</h1>
+            <p className="left-subtitle">Join thousands of professionals using CustomLink Pro to track, optimize, and brand their digital presence.</p>
+         </div>
+
+         {/* Decorative Crosshairs / Targets */}
+         <div className="decorative-circle dec-1"></div>
+         <div className="decorative-circle dec-2"></div>
+         <div className="decorative-line vertical"></div>
+         <div className="decorative-line horizontal"></div>
+
+         <div className="carousel-indicators">
+            <div className="indicator active"></div>
+            <div className="indicator"></div>
+            <div className="indicator"></div>
+         </div>
+      </div>
+
+      {/* RIGHT PANEL: FORMS */}
+      <div className="split-right">
+        <div className="form-container">
+          <div className="form-header">
+             <h2>{activeTab === 'login' ? 'Welcome back' : 'Create an account'}</h2>
+             <p>Enter your credentials to access your account</p>
           </div>
-          <h1 className="brand-name">Shorten.it</h1>
-        </div>
 
-        <h2 className="auth-title">Shorten. Track. Grow.</h2>
-        <p className="auth-description">Your links, amplified with real-time analytics.</p>
-
-        <div className="auth-tabs">
-          <button
-            className={`auth-tab ${activeTab === 'login' ? 'active' : ''}`}
-            onClick={() => setActiveTab('login')}
-          >
-            Login
+          <button className="google-btn">
+             <svg width="18" height="18" viewBox="0 0 18 18">
+                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615Z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
+                <path fill="#FBBC05" d="M3.964 10.707a5.41 5.41 0 0 1-.282-1.707c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332Z"/>
+                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58Z"/>
+             </svg>
+             Continue with Google
           </button>
-          <button
-            className={`auth-tab ${activeTab === 'signup' ? 'active' : ''}`}
-            onClick={() => setActiveTab('signup')}
-          >
-            Sign Up
-          </button>
-        </div>
 
-        {activeTab === 'login' ? (
-          <form onSubmit={handleLogin} className="modern-auth-form">
-            <div className="social-buttons">
-              <button type="button" className="social-button">
-                <svg width="20" height="20" viewBox="0 0 20 20">
-                  <path fill="currentColor" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z" />
-                  <path fill="currentColor" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z" />
-                  <path fill="currentColor" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z" />
-                  <path fill="currentColor" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z" />
-                </svg>
-                Google
-              </button>
-              <button type="button" className="social-button">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0110 4.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C17.137 18.163 20 14.418 20 10c0-5.523-4.477-10-10-10z" />
-                </svg>
-                GitHub
-              </button>
-            </div>
+          <div className="divider">
+            <span>OR EMAIL</span>
+          </div>
 
-            <div className="divider-text">OR EMAIL</div>
-
-            <div className="form-field">
-              <label htmlFor="login-email">EMAIL ADDRESS</label>
-              <div className="input-wrapper">
-                <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M3 4h14a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M2 5l8 5 8-5" stroke="currentColor" strokeWidth="1.5" />
-                </svg>
+          {activeTab === 'login' ? (
+            <form onSubmit={handleLogin} className="split-form">
+              <div className="input-group">
+                <label>Email address</label>
                 <input
-                  id="login-email"
                   type="email"
                   name="email"
                   placeholder="name@company.com"
@@ -134,103 +129,60 @@ export function Login({ onSuccess }) {
                   required
                 />
               </div>
-            </div>
 
-            <div className="form-field">
-              <div className="label-row">
-                <label htmlFor="login-password">PASSWORD</label>
-                <a href="#" className="forgot-link">Forget?</a>
+              <div className="input-group">
+                <div className="label-row">
+                  <label>Password</label>
+                  <a href="#" className="forgot-password">Forgot password?</a>
+                </div>
+                <div className="password-wrapper">
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={loginData.password}
+                    onChange={handleLoginChange}
+                    required
+                  />
+                  <button type="button" className="eye-btn">👁</button>
+                </div>
               </div>
-              <div className="input-wrapper">
-                <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <rect x="3" y="8" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M6 8V6a4 4 0 118 0v2" stroke="currentColor" strokeWidth="1.5" />
-                </svg>
-                <input
-                  id="login-password"
-                  type="password"
-                  name="password"
-                  placeholder="••••••••"
-                  value={loginData.password}
-                  onChange={handleLoginChange}
-                  required
-                />
-                <button type="button" className="password-toggle">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 4C5 4 1.73 7.11 1 10c.73 2.89 4 6 9 6s8.27-3.11 9-6c-.73-2.89-4-6-9-6z" stroke="currentColor" strokeWidth="1.5" />
-                    <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-                  </svg>
-                </button>
-              </div>
-            </div>
 
-            {error && <div className="error-alert">{error}</div>}
+              {error && <div className="error-alert">{error}</div>}
 
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? 'Signing in...' : 'Continue'}
-            </button>
-
-            <p className="terms-text">
-              By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-            </p>
-          </form>
-        ) : (
-          <form onSubmit={handleSignup} className="modern-auth-form">
-            <div className="social-buttons">
-              <button type="button" className="social-button">
-                <svg width="20" height="20" viewBox="0 0 20 20">
-                  <path fill="currentColor" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z" />
-                  <path fill="currentColor" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z" />
-                  <path fill="currentColor" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z" />
-                  <path fill="currentColor" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z" />
-                </svg>
-                Google
+              <button type="submit" className="primary-btn" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login to Account'}
               </button>
-              <button type="button" className="social-button">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0110 4.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C17.137 18.163 20 14.418 20 10c0-5.523-4.477-10-10-10z" />
-                </svg>
-                GitHub
-              </button>
-            </div>
+            </form>
+          ) : (
+            <form onSubmit={handleSignup} className="split-form">
+               <div className="input-row">
+                  <div className="input-group">
+                    <label>First Name</label>
+                    <input
+                      type="text"
+                      name="firstname"
+                      placeholder="John"
+                      value={signupData.firstname}
+                      onChange={handleSignupChange}
+                      required
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label>Last Name</label>
+                    <input
+                      type="text"
+                      name="lastname"
+                      placeholder="Doe"
+                      value={signupData.lastname}
+                      onChange={handleSignupChange}
+                    />
+                  </div>
+               </div>
 
-            <div className="divider-text">OR EMAIL</div>
-
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="firstname">FIRST NAME</label>
+              <div className="input-group">
+                <label>Email address</label>
                 <input
-                  id="firstname"
-                  type="text"
-                  name="firstname"
-                  placeholder="John"
-                  value={signupData.firstname}
-                  onChange={handleSignupChange}
-                  required
-                />
-              </div>
-              <div className="form-field">
-                <label htmlFor="lastname">LAST NAME</label>
-                <input
-                  id="lastname"
-                  type="text"
-                  name="lastname"
-                  placeholder="Doe"
-                  value={signupData.lastname}
-                  onChange={handleSignupChange}
-                />
-              </div>
-            </div>
-
-            <div className="form-field">
-              <label htmlFor="signup-email">EMAIL ADDRESS</label>
-              <div className="input-wrapper">
-                <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <path d="M3 4h14a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M2 5l8 5 8-5" stroke="currentColor" strokeWidth="1.5" />
-                </svg>
-                <input
-                  id="signup-email"
                   type="email"
                   name="email"
                   placeholder="name@company.com"
@@ -239,58 +191,45 @@ export function Login({ onSuccess }) {
                   required
                 />
               </div>
-            </div>
 
-            <div className="form-field">
-              <label htmlFor="signup-password">PASSWORD</label>
-              <div className="input-wrapper">
-                <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <rect x="3" y="8" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M6 8V6a4 4 0 118 0v2" stroke="currentColor" strokeWidth="1.5" />
-                </svg>
-                <input
-                  id="signup-password"
-                  type="password"
-                  name="password"
-                  placeholder="••••••••"
-                  value={signupData.password}
-                  onChange={handleSignupChange}
-                  required
-                  minLength="6"
-                />
-                <button type="button" className="password-toggle">
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 4C5 4 1.73 7.11 1 10c.73 2.89 4 6 9 6s8.27-3.11 9-6c-.73-2.89-4-6-9-6z" stroke="currentColor" strokeWidth="1.5" />
-                    <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.5" />
-                  </svg>
-                </button>
+              <div className="input-group">
+                <div className="label-row">
+                  <label>Password</label>
+                </div>
+                <div className="password-wrapper">
+                  <input
+                    type="password"
+                    name="password"
+                    placeholder="••••••••"
+                    value={signupData.password}
+                    onChange={handleSignupChange}
+                    required
+                    minLength="6"
+                  />
+                  <button type="button" className="eye-btn">👁</button>
+                </div>
               </div>
-            </div>
 
-            {error && <div className="error-alert">{error}</div>}
+              {error && <div className="error-alert">{error}</div>}
 
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? 'Creating account...' : 'Continue'}
-            </button>
+              <button type="submit" className="primary-btn" disabled={loading}>
+                {loading ? 'Creating...' : 'Create Account'}
+              </button>
+            </form>
+          )}
 
-            <p className="terms-text">
-              By continuing, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-            </p>
-          </form>
-        )}
-
-        <div className="auth-footer">
-          <div className="stat">
-            <div className="stat-value">12M+</div>
-            <div className="stat-label">LINKS CREATED</div>
+          <div className="toggle-footer">
+             {activeTab === 'login' ? (
+                <>Don't have an account? <span onClick={() => setActiveTab('signup')}>Sign up for free</span></>
+             ) : (
+                <>Already have an account? <span onClick={() => setActiveTab('login')}>Log in</span></>
+             )}
           </div>
-          <div className="stat">
-            <div className="stat-value">99.9%</div>
-            <div className="stat-label">UPTIME RATE</div>
-          </div>
-          <div className="stat">
-            <div className="stat-value">24/7</div>
-            <div className="stat-label">MONITORING</div>
+
+          <div className="meta-links">
+             <a href="#">Privacy Policy</a>
+             <a href="#">Terms of Service</a>
+             <a href="#">Help Center</a>
           </div>
         </div>
       </div>
