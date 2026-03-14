@@ -11,19 +11,48 @@ const app = express();
 /* =========================
    CORS CONFIGURATION
 ========================= */
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "https://url-shortner-indol-eight.vercel.app",
-    process.env.CORS_ORIGIN
-  ].filter(Boolean), // Filter out undefined if env var is not set
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
-
 /* =========================
+   CORS CONFIGURATION (FIXED)
+========================= */
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://url-shortner-indol-eight.vercel.app",
+  "https://url-shortner-git-main-praveen-kumar-nishads-projects.vercel.app",
+  "https://url-shortner-lzhxmlopv-praveen-kumar-nishads-projects.vercel.app" // Add the specific failing URL
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow Postman / curl
+      if (!origin) return callback(null, true);
+
+      // Check against specific allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Check against Vercel preview pattern (allows any url-shortner-*-praveen-kumar-nishads-projects.vercel.app)
+      const vercelPreviewPattern = /^https:\/\/url-shortner-.*-praveen-kumar-nishads-projects\.vercel\.app$/;
+      if (vercelPreviewPattern.test(origin)) {
+        return callback(null, true);
+      }
+
+      console.log('Blocked CORS origin:', origin); // Log blocked origins for debugging
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  })
+);
+
+// ✅ REQUIRED FOR PREFLIGHT
+app.options("*", cors());
+
+/* =====================
    MIDDLEWARE
 ========================= */
 app.use(express.json());
