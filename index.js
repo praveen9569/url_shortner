@@ -1,9 +1,10 @@
-import 'dotenv/config';  // Add this at the very top
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import userRouter from './routes/user.routes.js';
 import { authenticationMiddleware } from './middlewares/auth.middleware.js';
 import urlRouter from './routes/url.routes.js';
+import urlProtectedRouter from './routes/url.protected.routes.js';
 import analyticsRouter from './routes/analytics.routes.js';
 
 const app = express();
@@ -61,31 +62,32 @@ app.use(express.json());
    PUBLIC ROUTES
 ========================= */
 app.get('/', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'Welcome to the URL Shortener Service',
-    timestamp: new Date().toISOString()
-  });
+   res.json({
+      status: 'ok',
+      message: 'Welcome to the URL Shortener Service',
+      timestamp: new Date().toISOString()
+   });
 });
 
 app.use('/user', userRouter);
+app.use(urlRouter);
 
 /* =========================
    PROTECTED ROUTES
 ========================= */
 app.use(authenticationMiddleware);
-app.use(urlRouter);
+app.use(urlProtectedRouter); // Protected URL routes (shorten)
 app.use('/api/analytics', analyticsRouter);
 
 /* =========================
    ERROR HANDLING
 ========================= */
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    error: 'Internal server error',
-    message: err.message
-  });
+   console.error('Error:', err);
+   res.status(500).json({
+      error: 'Internal server error',
+      message: err.message
+   });
 });
 
 /* =========================
@@ -94,8 +96,8 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Database URL: ${process.env.DATABASE_URL ? 'configured' : '⚠️  MISSING'}`);
-  console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : '⚠️  MISSING'}`);
+   console.log(`✅ Server running on port ${PORT}`);
+   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+   console.log(`🔗 Database URL: ${process.env.DATABASE_URL ? 'configured' : '⚠️  MISSING'}`);
+   console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : '⚠️  MISSING'}`);
 });
