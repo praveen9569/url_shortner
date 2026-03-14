@@ -6,9 +6,9 @@ const { Pool } = pg;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? {
+  ssl: {
     rejectUnauthorized: false
-  } : false
+  }
 });
 
 // Don't use top-level await - just export immediately
